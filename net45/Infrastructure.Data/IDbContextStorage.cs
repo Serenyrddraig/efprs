@@ -20,12 +20,12 @@ namespace Infrastructure.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="objectContext">The object context.</param>
-        void SetDbContextForKey(string key, DbContext objectContext);
+        void SetDbContextFactoryForKey(string key, IEFContextFactory<DbContext> objectContext);
 
         /// <summary>
         /// Gets all db contexts.
         /// </summary>
         /// <returns></returns>
-        IEnumerable<DbContext> GetAllDbContexts();
+       /// IEnumerable<DbContext> GetAllDbContexts();
     }
 }

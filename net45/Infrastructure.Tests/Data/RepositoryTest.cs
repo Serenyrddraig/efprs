@@ -18,22 +18,26 @@ namespace Infrastructure.Tests.Data
     public class RepositoryTest
     {
         private ICustomerRepository customerRepository;
-        private IRepository repository;
+        private GenericRepository genericRepository;
+        private IRepository repository { get { return genericRepository; } }
 
         [TestInitialize]
         public void SetUp()
         {
             DbContextManager.InitStorage(new SimpleDbContextStorage());
             DbContextManager.Init("DefaultDb", new[] { "Infrastructure.Tests" }, true);
-
-            customerRepository = new CustomerRepository();
-            repository = new GenericRepository();
+            var Context = DbContextManager.GetContext();
+            genericRepository = new GenericRepository(Context);
+            customerRepository = new CustomerRepository(Context);
         }
 
         [TestCleanup]
-        public void TearDown()
+        public void CleanUp()
         {
-            DbContextManager.CloseAllDbContexts();
+            if (null != genericRepository)
+            {
+                genericRepository.Close();
+            }
         }
 
         [TestMethod]

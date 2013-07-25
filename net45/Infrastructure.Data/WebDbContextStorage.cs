@@ -10,7 +10,6 @@ namespace Infrastructure.Data
         {
             app.EndRequest += (sender, args) =>
             {
-                DbContextManager.CloseAllDbContexts();
                 HttpContext.Current.Items.Remove(STORAGE_KEY);
             };
         }
@@ -21,17 +20,17 @@ namespace Infrastructure.Data
             return storage.GetDbContextForKey(key);
         }
 
-        public void SetDbContextForKey(string factoryKey, DbContext context)
+        public void SetDbContextFactoryForKey(string factoryKey, IEFContextFactory<DbContext> context)
         {
             SimpleDbContextStorage storage = GetSimpleDbContextStorage();
-            storage.SetDbContextForKey(factoryKey, context);
+            storage.SetDbContextFactoryForKey(factoryKey, context);
         }
 
-        public IEnumerable<DbContext> GetAllDbContexts()
-        {
-            SimpleDbContextStorage storage = GetSimpleDbContextStorage();
-            return storage.GetAllDbContexts();
-        }
+        //public IEnumerable<DbContext> GetAllDbContexts()
+        //{
+        //    SimpleDbContextStorage storage = GetSimpleDbContextStorage();
+        //    return storage.GetAllDbContexts();
+        //}
 
         private SimpleDbContextStorage GetSimpleDbContextStorage()
         {

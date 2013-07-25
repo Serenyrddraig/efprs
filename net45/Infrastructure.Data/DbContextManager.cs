@@ -33,32 +33,21 @@ namespace Infrastructure.Data
         /// <summary>
         /// The default connection string name used if only one database is being communicated with.
         /// </summary>
-        public static readonly string DefaultConnectionStringName = "DefaultDb";        
+        public const string DefaultConnectionStringName = "DefaultDb";  
+      
 
-        /// <summary>
-        /// Used to get the current db context session if you're communicating with a single database.
-        /// When communicating with multiple databases, invoke <see cref="CurrentFor()" /> instead.
-        /// </summary>
-        public static DbContext Current
-        {
-            get
-            {
-                return CurrentFor(DefaultConnectionStringName);
-            }
-        }
-
-        /// <summary>
-        /// Used to get the current DbContext associated with a key; i.e., the key 
-        /// associated with an object context for a specific database.
-        /// 
-        /// If you're only communicating with one database, you should call <see cref="Current" /> instead,
-        /// although you're certainly welcome to call this if you have the key available.
-        /// </summary>
-        public static DbContext CurrentFor(string key)
+        ///// <summary>
+        ///// Used to get the a DbContext associated with a key; i.e., the key 
+        ///// associated with an  for a specific database.
+        ///// 
+        ///// If you're only communicating with one database, you should call <see cref="Current" /> instead,
+        ///// although you're certainly welcome to call this if you have the key available.
+        ///// </summary>
+        public static DbContext GetContext(string key = DefaultConnectionStringName)
         {
             if (string.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("key");
+                key = DefaultConnectionStringName;
             }
 
             if (_storage == null)
@@ -78,24 +67,13 @@ namespace Infrastructure.Data
 
                 if (context == null)
                 {
-                    context = _dbContextBuilders[key].BuildDbContext();                    
-                    _storage.SetDbContextForKey(key, context);
+                    var bldr = _dbContextBuilders[key];
+                    var model = bldr.CompiledModel;  // force model compile                  
+                    _storage.SetDbContextFactoryForKey(key, (IEFContextFactory<DbContext>)bldr);
+                    context = _storage.GetDbContextForKey(key);
                 }
             }
             return context;
-        }
-
-        /// <summary>
-        /// This method is used by application-specific db context storage implementations
-        /// and unit tests. Its job is to walk thru existing cached object context(s) and Close() each one.
-        /// </summary>
-        public static void CloseAllDbContexts()
-        {
-            foreach (DbContext ctx in _storage.GetAllDbContexts())
-            {
-                if (((IObjectContextAdapter)ctx).ObjectContext.Connection.State == System.Data.ConnectionState.Open)
-                    ((IObjectContextAdapter)ctx).ObjectContext.Connection.Close();
-            }
         }
 
         private static void AddConfiguration(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists = false, bool lazyLoadingEnabled = true)
@@ -121,7 +99,7 @@ namespace Infrastructure.Data
         /// An application-specific implementation of IDbContextStorage must be setup either thru
         /// <see cref="InitStorage" /> or one of the <see cref="Init" /> overloads. 
         /// </summary>
-        private static IDbContextStorage _storage { get; set; }
+        protected static IDbContextStorage _storage { get; set; }
 
         /// <summary>
         /// Maintains a dictionary of db context builders, one per database.  The key is a 
@@ -129,7 +107,7 @@ namespace Infrastructure.Data
         /// repositories. If only one database is being used, this dictionary contains a single
         /// factory with a key of <see cref="DefaultConnectionStringName" />.
         /// </summary>
-        private static Dictionary<string, IDbContextBuilder<DbContext>> _dbContextBuilders = new Dictionary<string, IDbContextBuilder<DbContext>>();
+        private static Dictionary<string, DbContextBuilder<DbContext>> _dbContextBuilders = new Dictionary<string, DbContextBuilder<DbContext>>();
 
         private static object _syncLock = new object();
     }

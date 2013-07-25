@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Data.Objects;
 using System.Linq.Expressions;
@@ -14,7 +15,7 @@ namespace Infrastructure.Data
     /// <summary>
     /// Generic repository
     /// </summary>
-    public class GenericRepository : IRepository
+    public partial class GenericRepository : IRepository, IDisposable
     {
         private readonly string _connectionStringName;
         private DbContext _context;        
@@ -273,9 +274,7 @@ namespace Infrastructure.Data
 
         private string GetEntityName<TEntity>() where TEntity : class
         {
-            // PluralizationService pluralizer = PluralizationService.CreateService(CultureInfo.GetCultureInfo("en"));
-            // return string.Format("{0}.{1}", ((IObjectContextAdapter)DbContext).ObjectContext.DefaultContainerName, pluralizer.Pluralize(typeof(TEntity).Name));
-            
+           
             // Thanks to Kamyar Paykhan -  http://huyrua.wordpress.com/2011/04/13/entity-framework-4-poco-repository-and-specification-pattern-upgraded-to-ef-4-1/#comment-688
             string entitySetName = ((IObjectContextAdapter)DbContext).ObjectContext
                 .MetadataWorkspace
@@ -284,21 +283,45 @@ namespace Infrastructure.Data
             return string.Format("{0}.{1}", ((IObjectContextAdapter)DbContext).ObjectContext.DefaultContainerName, entitySetName);            
         }
 
-        private DbContext DbContext
+        protected DbContext DbContext
         {
             get
             {
                 if (this._context == null)
                 {
-                    if (this._connectionStringName == string.Empty)
-                        this._context = DbContextManager.Current;
-                    else
-                        this._context = DbContextManager.CurrentFor(this._connectionStringName);
+                    _context = DbContextManager.GetContext(_connectionStringName);
                 }
                 return this._context;
             }
         }       
 
-        private IUnitOfWork unitOfWork;        
+        private IUnitOfWork unitOfWork;
+
+        private bool _bDisposed = false;
+        public void Dispose()
+        {
+            Close();
+        }
+
+        protected void Dispose(bool bDisposing)
+        {
+            if (!_bDisposed)
+            {
+                if (bDisposing)
+                {
+                    if (null != _context)
+                    {
+                        _context.Dispose();
+                    }
+                }
+                _bDisposed = true;
+            }
+        }
+
+        public void Close()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

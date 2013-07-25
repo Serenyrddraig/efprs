@@ -2,6 +2,7 @@
 using System.Data.Common;
 using System.Data.Objects;
 using System;
+using System.IO;
 using System.Reflection;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity;
@@ -9,57 +10,19 @@ using System.Data.Entity.Infrastructure;
 
 namespace Infrastructure.Data
 {
-    public interface IDbContextBuilder<T> where T : DbContext
+    public partial class DbContextBuilder<T> : DbModelBuilder
     {
-        T BuildDbContext();
-    }
+        private ConnectionStringSettings CnStringSettings { get; set; }
+        private bool RecreateDatabaseIfExists { get; set; }
+        private bool LazyLoadingEnabled { get; set; }
 
-    public class DbContextBuilder<T> : DbModelBuilder, IDbContextBuilder<T> where T : DbContext
-    {
-        private readonly DbProviderFactory _factory;
-        private readonly ConnectionStringSettings _cnStringSettings;
-        private readonly bool _recreateDatabaseIfExists;
-        private readonly bool _lazyLoadingEnabled;
-
-        public DbContextBuilder(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists, bool lazyLoadingEnabled) 
-        {           
-            _cnStringSettings = ConfigurationManager.ConnectionStrings[connectionStringName];
-            _factory = DbProviderFactories.GetFactory(_cnStringSettings.ProviderName);
-            _recreateDatabaseIfExists = recreateDatabaseIfExists;
-            _lazyLoadingEnabled = lazyLoadingEnabled;           
-
-            AddConfigurations(mappingAssemblies);
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ObjectContext"/>.
-        /// </summary>
-        /// <param name="lazyLoadingEnabled">if set to <c>true</c> [lazy loading enabled].</param>
-        /// <param name="recreateDatabaseIfExist">if set to <c>true</c> [recreate database if exist].</param>
-        /// <returns></returns>
-        public T BuildDbContext()
+        public DbContextBuilder(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists, bool lazyLoadingEnabled)
         {
-            var cn = _factory.CreateConnection();
-            cn.ConnectionString = _cnStringSettings.ConnectionString;
-
-            var dbModel = this.Build(cn);
-
-            ObjectContext ctx = dbModel.Compile().CreateObjectContext<ObjectContext>(cn);
-            ctx.ContextOptions.LazyLoadingEnabled = this._lazyLoadingEnabled;
-
-            if (!ctx.DatabaseExists())
-            {
-                ctx.CreateDatabase();
-            }
-            else if (_recreateDatabaseIfExists)
-            {
-                ctx.DeleteDatabase();
-                ctx.CreateDatabase();
-            }
-
-            return (T)new DbContext(ctx, true);
+            CnStringSettings = ConfigurationManager.ConnectionStrings[connectionStringName];
+            ApplyConfiguration(mappingAssemblies, recreateDatabaseIfExists, lazyLoadingEnabled);
         }
 
+        
         /// <summary>
         /// Adds mapping classes contained in provided assemblies and register entities as well
         /// </summary>
@@ -128,9 +91,18 @@ namespace Infrastructure.Data
         /// <returns></returns>
         private static string MakeLoadReadyAssemblyName(string assemblyName)
         {
-            return (assemblyName.IndexOf(".dll") == -1)
+            var asmFile = (assemblyName.IndexOf(".dll") == -1)
                 ? assemblyName.Trim() + ".dll"
                 : assemblyName.Trim();
+
+            if (!Path.IsPathRooted(asmFile))
+            {
+                // If asmFile is not rooted, root it to this assembly's path
+                // Assembly.GetExecutingAssembly().Location does not work in xUnit
+                string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase).Substring(@"file:\".Length);
+                asmFile = Path.Combine(location, asmFile);
+            }
+            return asmFile;
         }
 
     }

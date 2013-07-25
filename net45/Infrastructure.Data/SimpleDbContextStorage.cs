@@ -5,7 +5,7 @@ namespace Infrastructure.Data
 {
     public class SimpleDbContextStorage : IDbContextStorage
     {
-        private Dictionary<string, DbContext> _storage = new Dictionary<string, DbContext>();
+        private Dictionary<string, IEFContextFactory<DbContext>> _storage = new Dictionary<string, IEFContextFactory<DbContext>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleDbContextStorage"/> class.
@@ -20,10 +20,10 @@ namespace Infrastructure.Data
         /// <returns></returns>
         public DbContext GetDbContextForKey(string key)
         {
-            DbContext context;
+            IEFContextFactory<DbContext> context;
             if (!this._storage.TryGetValue(key, out context))
                 return null;
-            return context;
+            return context.Create();
         }
 
 
@@ -34,7 +34,7 @@ namespace Infrastructure.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="objectContext">The object context.</param>
-        public void SetDbContextForKey(string key, DbContext context)
+        public void SetDbContextFactoryForKey(string key, IEFContextFactory<DbContext> context)
         {
             this._storage.Add(key, context);           
         }
@@ -43,9 +43,9 @@ namespace Infrastructure.Data
         /// Returns all the values of the internal dictionary of db contexts.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<DbContext> GetAllDbContexts()
-        {
-            return this._storage.Values;
-        }
+        //public IEnumerable<DbContext> GetAllDbContexts()
+        //{
+        //    return this._storage.Values;
+        //}
     }
 }

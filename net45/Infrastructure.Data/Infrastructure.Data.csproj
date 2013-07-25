@@ -47,13 +47,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbContextBuilder.cs" />
+    <Compile Include="DbContextBuilder.IEFContextFactory.cs" />
     <Compile Include="DbContextInitializer.cs" />
     <Compile Include="DbContextManager.cs" />
     <Compile Include="Extensions\ExpressionExtension.cs" />
     <Compile Include="Extensions\ExpressionVisitor.cs" />
     <Compile Include="Extensions\ParameterRebinder .cs" />
+    <Compile Include="GenericRepository.Context.cs" />
     <Compile Include="GenericRepository.cs" />
     <Compile Include="IDbContextStorage.cs" />
+    <Compile Include="IEFContextFactory.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="IUnitOfWork.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

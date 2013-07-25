@@ -16,7 +16,8 @@ namespace Infrastructure.Tests.Data
     public class UseMyDbContextTest
     {
         private ICustomerRepository customerRepository;
-        private IRepository repository;
+        private IRepository repository { get { return genericRepository; }}
+        private GenericRepository genericRepository;
         private MyDbContext context;
 
         [TestInitialize]
@@ -26,7 +27,7 @@ namespace Infrastructure.Tests.Data
             context = new MyDbContext("DefaultDb");
             
             customerRepository = new CustomerRepository(context);
-            repository = new GenericRepository(context);
+            genericRepository = new GenericRepository(context);
         }
 
         [TestMethod]
@@ -41,10 +42,9 @@ namespace Infrastructure.Tests.Data
         [TestCleanup]
         public void TearDown()
         {
-            if ((context != null) && (((IObjectContextAdapter)context).ObjectContext.Connection.State == System.Data.ConnectionState.Open))
+            if (null != genericRepository)
             {
-                ((IObjectContextAdapter)context).ObjectContext.Connection.Close();
-                context = null;
+                genericRepository.Close();
             }
         }
 

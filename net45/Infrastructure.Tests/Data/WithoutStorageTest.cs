@@ -16,27 +16,23 @@ namespace Infrastructure.Tests.Data
     public class WithoutStorageTest
     {
         private ICustomerRepository customerRepository;
-        private IRepository repository;
-        private DbContext context;
+        private GenericRepository genericRepository;
+        private IRepository repository { get { return genericRepository; } }
 
         [TestInitialize]
         public void SetUp()
         {
             DbContextBuilder<DbContext> builder = new DbContextBuilder<DbContext>("DefaultDb", new[] { "Infrastructure.Tests" }, true, true);
-            context = builder.BuildDbContext();
+            var context = ((IEFContextFactory<DbContext>)builder).Create();
 
             customerRepository = new CustomerRepository(context);
-            repository = new GenericRepository(context);
+            genericRepository = new GenericRepository(context);
         }
 
         [TestCleanup]
         public void TearDown()
         {
-            if ((context != null) && (((IObjectContextAdapter)context).ObjectContext.Connection.State == System.Data.ConnectionState.Open))
-            {
-                ((IObjectContextAdapter)context).ObjectContext.Connection.Close();
-                context = null;
-            }
+            genericRepository.Close();
         }
 
         [TestMethod]
