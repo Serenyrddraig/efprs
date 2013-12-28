@@ -1,17 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Web;
 
 namespace Infrastructure.Data
 {
     public class WebDbContextStorage : IDbContextStorage
     {
+        private const string STORAGE_KEY = "HttpContextObjectContextStorageKey";
+
         public WebDbContextStorage(HttpApplication app)
         {
-            app.EndRequest += (sender, args) =>
-            {
-                HttpContext.Current.Items.Remove(STORAGE_KEY);
-            };
+            app.EndRequest += (sender, args) => { HttpContext.Current.Items.Remove(STORAGE_KEY); };
         }
 
         public DbContext GetDbContextForKey(string key)
@@ -35,7 +33,7 @@ namespace Infrastructure.Data
         private SimpleDbContextStorage GetSimpleDbContextStorage()
         {
             HttpContext context = HttpContext.Current;
-            SimpleDbContextStorage storage = context.Items[STORAGE_KEY] as SimpleDbContextStorage;
+            var storage = context.Items[STORAGE_KEY] as SimpleDbContextStorage;
             if (storage == null)
             {
                 storage = new SimpleDbContextStorage();
@@ -43,7 +41,5 @@ namespace Infrastructure.Data
             }
             return storage;
         }
-
-        private const string STORAGE_KEY = "HttpContextObjectContextStorageKey";
     }
 }

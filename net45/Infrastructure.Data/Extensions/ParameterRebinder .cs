@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 namespace Infrastructure.Data.Extensions
 {
     /// <summary>
-    /// http://blogs.msdn.com/b/meek/archive/2008/05/02/linq-to-entities-combining-predicates.aspx
+    ///     http://blogs.msdn.com/b/meek/archive/2008/05/02/linq-to-entities-combining-predicates.aspx
     /// </summary>
     public class ParameterRebinder : ExpressionVisitor
     {
@@ -15,7 +15,8 @@ namespace Infrastructure.Data.Extensions
             this.map = map ?? new Dictionary<ParameterExpression, ParameterExpression>();
         }
 
-        public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map, Expression exp)
+        public static Expression ReplaceParameters(Dictionary<ParameterExpression, ParameterExpression> map,
+            Expression exp)
         {
             return new ParameterRebinder(map).Visit(exp);
         }

@@ -10,11 +10,7 @@ namespace Infrastructure.Tests.Data.Domain
             Products = new List<Product>();
         }
 
-        public virtual string Name
-        {
-            get;
-            set;
-        }
+        public virtual string Name { get; set; }
 
         public virtual IList<Product> Products { get; set; }
     }

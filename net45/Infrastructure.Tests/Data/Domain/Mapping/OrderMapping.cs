@@ -1,5 +1,4 @@
-﻿
-namespace Infrastructure.Tests.Data.Domain.Mapping
+﻿namespace Infrastructure.Tests.Data.Domain.Mapping
 {
     public class OrderMapping : EntityMappingBase<Order>
     {
@@ -10,11 +9,11 @@ namespace Infrastructure.Tests.Data.Domain.Mapping
             Property(x => x.OrderDate);
             Property(x => x.CustomerId);
 
-            HasRequired<Customer>(x => x.Customer)
-                .WithMany(y => y.Orders)                
+            HasRequired(x => x.Customer)
+                .WithMany(y => y.Orders)
                 .HasForeignKey(o => o.CustomerId);
-                
-            ToTable("Order");            
+
+            ToTable("Order");
         }
     }
 }

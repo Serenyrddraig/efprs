@@ -1,30 +1,28 @@
-﻿using System.Configuration;
-using System.Data.Common;
-using System.Data.Objects;
-using System;
+﻿using System;
+using System.Configuration;
+using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Reflection;
-using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 
 namespace Infrastructure.Data
 {
     public partial class DbContextBuilder<T> : DbModelBuilder
     {
-        private ConnectionStringSettings CnStringSettings { get; set; }
-        private bool RecreateDatabaseIfExists { get; set; }
-        private bool LazyLoadingEnabled { get; set; }
-
-        public DbContextBuilder(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists, bool lazyLoadingEnabled)
+        public DbContextBuilder(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists,
+            bool lazyLoadingEnabled)
         {
             CnStringSettings = ConfigurationManager.ConnectionStrings[connectionStringName];
             ApplyConfiguration(mappingAssemblies, recreateDatabaseIfExists, lazyLoadingEnabled);
         }
 
-        
+        private ConnectionStringSettings CnStringSettings { get; set; }
+        private bool RecreateDatabaseIfExists { get; set; }
+        private bool LazyLoadingEnabled { get; set; }
+
+
         /// <summary>
-        /// Adds mapping classes contained in provided assemblies and register entities as well
+        ///     Adds mapping classes contained in provided assemblies and register entities as well
         /// </summary>
         /// <param name="mappingAssemblies"></param>
         private void AddConfigurations(string[] mappingAssemblies)
@@ -37,19 +35,19 @@ namespace Infrastructure.Data
             bool hasMappingClass = false;
             foreach (string mappingAssembly in mappingAssemblies)
             {
-                Assembly asm = Assembly.LoadFrom(MakeLoadReadyAssemblyName(mappingAssembly));                
+                Assembly asm = Assembly.LoadFrom(MakeLoadReadyAssemblyName(mappingAssembly));
 
                 foreach (Type type in asm.GetTypes())
                 {
                     if (!type.IsAbstract)
-                    {                        
+                    {
                         if (type.BaseType.IsGenericType && IsMappingClass(type.BaseType))
                         {
                             hasMappingClass = true;
 
                             // http://areaofinterest.wordpress.com/2010/12/08/dynamically-load-entity-configurations-in-ef-codefirst-ctp5/
                             dynamic configurationInstance = Activator.CreateInstance(type);
-                            this.Configurations.Add(configurationInstance);
+                            Configurations.Add(configurationInstance);
                         }
                     }
                 }
@@ -62,15 +60,15 @@ namespace Infrastructure.Data
         }
 
         /// <summary>
-        /// Determines whether a type is a subclass of entity mapping type
+        ///     Determines whether a type is a subclass of entity mapping type
         /// </summary>
         /// <param name="mappingType">Type of the mapping.</param>
         /// <returns>
-        /// 	<c>true</c> if it is mapping class; otherwise, <c>false</c>.
+        ///     <c>true</c> if it is mapping class; otherwise, <c>false</c>.
         /// </returns>
         private bool IsMappingClass(Type mappingType)
         {
-            Type baseType = typeof(EntityTypeConfiguration<>);
+            Type baseType = typeof (EntityTypeConfiguration<>);
             if (mappingType.GetGenericTypeDefinition() == baseType)
             {
                 return true;
@@ -83,15 +81,15 @@ namespace Infrastructure.Data
             }
             return false;
         }
-        
+
         /// <summary>
-        /// Ensures the assembly name is qualified
+        ///     Ensures the assembly name is qualified
         /// </summary>
         /// <param name="assemblyName"></param>
         /// <returns></returns>
         private static string MakeLoadReadyAssemblyName(string assemblyName)
         {
-            var asmFile = (assemblyName.IndexOf(".dll") == -1)
+            string asmFile = (assemblyName.IndexOf(".dll") == -1)
                 ? assemblyName.Trim() + ".dll"
                 : assemblyName.Trim();
 
@@ -99,11 +97,11 @@ namespace Infrastructure.Data
             {
                 // If asmFile is not rooted, root it to this assembly's path
                 // Assembly.GetExecutingAssembly().Location does not work in xUnit
-                string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase).Substring(@"file:\".Length);
+                string location =
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase).Substring(@"file:\".Length);
                 asmFile = Path.Combine(location, asmFile);
             }
             return asmFile;
         }
-
     }
 }

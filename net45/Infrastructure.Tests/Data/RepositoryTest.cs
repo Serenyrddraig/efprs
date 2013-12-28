@@ -1,32 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data.Entity;
+using System.Linq;
 using System.Linq.Expressions;
-using Infrastructure.Tests.Data.Domain;
-using Infrastructure.Data.Specification;
-using Infrastructure.Tests.Data.Specification;
 using Infrastructure.Data;
+using Infrastructure.Data.Specification;
+using Infrastructure.Tests.Data.Domain;
+using Infrastructure.Tests.Data.Specification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Infrastructure.Tests.Data
 {
     /// <summary>
-    /// This class is used to test the _lab_ version of repository implementation
+    ///     This class is used to test the _lab_ version of repository implementation
     /// </summary>
     [TestClass]
     public class RepositoryTest
     {
         private ICustomerRepository customerRepository;
         private GenericRepository genericRepository;
-        private IRepository repository { get { return genericRepository; } }
+
+        private IRepository repository
+        {
+            get { return genericRepository; }
+        }
 
         [TestInitialize]
         public void SetUp()
         {
             DbContextManager.InitStorage(new SimpleDbContextStorage());
-            DbContextManager.Init("DefaultDb", new[] { "Infrastructure.Tests" }, true);
-            var Context = DbContextManager.GetContext();
+            DbContextManager.Init("DefaultDb", new[] {"Infrastructure.Tests"}, true);
+            DbContext Context = DbContextManager.GetContext();
             genericRepository = new GenericRepository(Context);
             customerRepository = new CustomerRepository(Context);
         }
@@ -60,28 +64,29 @@ namespace Infrastructure.Tests.Data
 
         private void FindBySpecification()
         {
-            Specification<Product> specification = new Specification<Product>(p => p.Price < 100);
-            IEnumerable<Product> productsOnSale = repository.Find<Product>(specification);
+            var specification = new Specification<Product>(p => p.Price < 100);
+            IEnumerable<Product> productsOnSale = repository.Find(specification);
             Assert.AreEqual(2, productsOnSale.Count());
         }
 
         private void FindByCompositeSpecification()
         {
-            IEnumerable<Product> products = repository.Find<Product>(
-                new Specification<Product>(p => p.Price < 100).And(new Specification<Product>(p => p.Name == "Windows XP Professional")));
+            IEnumerable<Product> products = repository.Find(
+                new Specification<Product>(p => p.Price < 100).And(
+                    new Specification<Product>(p => p.Name == "Windows XP Professional")));
             Assert.AreEqual(1, products.Count());
         }
 
         private void FindByConcretSpecification()
         {
-            ProductOnSaleSpecification specification = new ProductOnSaleSpecification();
-            IEnumerable<Product> productsOnSale = repository.Find<Product>(specification);
+            var specification = new ProductOnSaleSpecification();
+            IEnumerable<Product> productsOnSale = repository.Find(specification);
             Assert.AreEqual(2, productsOnSale.Count());
         }
 
         private void FindByConcretCompositeSpecification()
         {
-            IEnumerable<Product> products = repository.Find<Product>(
+            IEnumerable<Product> products = repository.Find(
                 new AndSpecification<Product>(
                     new ProductOnSaleSpecification(),
                     new ProductByNameSpecification("Windows XP Professional")));
@@ -90,7 +95,7 @@ namespace Infrastructure.Tests.Data
 
         private void FindByChainOfSpecifications()
         {
-            IEnumerable<Product> products = repository.Find<Product>(
+            IEnumerable<Product> products = repository.Find(
                 new ProductOnSaleSpecification()
                     .And(new ProductByNameSpecification("Windows XP Professional")));
             Assert.AreEqual(1, products.Count());
@@ -98,40 +103,40 @@ namespace Infrastructure.Tests.Data
 
         private void FindOrderWithInclude()
         {
-            var c = customerRepository.FindByName("John", "Doe");
+            Customer c = customerRepository.FindByName("John", "Doe");
             List<Order> orders = repository.Find<Order>(x => x.Customer.Id == c.Id).ToList();
             Console.Write("Found {0} Orders with {1} OrderLines", orders.Count(), orders.ToList()[0].OrderLines.Count);
         }
 
         private void CreateProducts()
         {
-            Category osCategory = new Category { Name = "Operating System" };
-            Category msProductCategory = new Category { Name = "MS Product" };
+            var osCategory = new Category {Name = "Operating System"};
+            var msProductCategory = new Category {Name = "MS Product"};
 
             repository.Add(osCategory);
             repository.Add(msProductCategory);
 
-            var p1 = new Product { Name = "Windows Seven Professional", Price = 100 };
+            var p1 = new Product {Name = "Windows Seven Professional", Price = 100};
             p1.Categories.Add(osCategory);
             p1.Categories.Add(msProductCategory);
             repository.Add(p1);
 
-            var p2 = new Product { Name = "Windows XP Professional", Price = 20 };
+            var p2 = new Product {Name = "Windows XP Professional", Price = 20};
             p2.Categories.Add(osCategory);
             p2.Categories.Add(msProductCategory);
             repository.Add(p2);
 
-            var p3 = new Product { Name = "Windows Seven Home", Price = 80 };
+            var p3 = new Product {Name = "Windows Seven Home", Price = 80};
             p3.Categories.Add(osCategory);
             p3.Categories.Add(msProductCategory);
             repository.Add(p3);
 
-            var p4 = new Product { Name = "Windows Seven Ultimate", Price = 110 };
+            var p4 = new Product {Name = "Windows Seven Ultimate", Price = 110};
             p4.Categories.Add(osCategory);
             p4.Categories.Add(msProductCategory);
             repository.Add(p4);
 
-            var p5 = new Product { Name = "Windows Seven Premium", Price = 150 };
+            var p5 = new Product {Name = "Windows Seven Premium", Price = 150};
             p5.Categories.Add(osCategory);
             p5.Categories.Add(msProductCategory);
             repository.Add(p5);
@@ -143,22 +148,22 @@ namespace Infrastructure.Tests.Data
 
         private void FindManyOrdersForJohnDoe()
         {
-            var c = customerRepository.FindByName("John", "Doe");
-            var orders = repository.Find<Order>(x => x.Customer.Id == c.Id);
+            Customer c = customerRepository.FindByName("John", "Doe");
+            IEnumerable<Order> orders = repository.Find<Order>(x => x.Customer.Id == c.Id);
 
             Console.Write("Found {0} Orders with {1} OrderLines", orders.Count(), orders.ToList()[0].OrderLines.Count);
         }
 
         private void FindNewlySubscribed()
         {
-            var newCustomers = customerRepository.NewlySubscribed();
+            IList<Customer> newCustomers = customerRepository.NewlySubscribed();
 
             Console.Write("Found {0} new customers", newCustomers.Count);
         }
 
         private void AddOrders()
         {
-            var c = customerRepository.FindByName("John", "Doe");
+            Customer c = customerRepository.FindByName("John", "Doe");
 
             var winXP = repository.FindOne<Product>(x => x.Name == "Windows XP Professional");
             var winSeven = repository.FindOne<Product>(x => x.Name == "Windows Seven Professional");
@@ -169,8 +174,8 @@ namespace Infrastructure.Tests.Data
                 Customer = c,
                 OrderLines = new List<OrderLine>
                 {
-                    new OrderLine { Price = 200, Product = winXP, Quantity = 1},
-                    new OrderLine { Price = 699.99, Product = winSeven, Quantity = 5 }
+                    new OrderLine {Price = 200, Product = winXP, Quantity = 1},
+                    new OrderLine {Price = 699.99, Product = winSeven, Quantity = 5}
                 }
             };
 
@@ -181,7 +186,7 @@ namespace Infrastructure.Tests.Data
 
         private void FindByKey()
         {
-            var c = customerRepository.FindByName("John", "Doe");
+            Customer c = customerRepository.FindByName("John", "Doe");
 
             var customer = customerRepository.GetByKey<Customer>(c.Id);
 
@@ -190,7 +195,7 @@ namespace Infrastructure.Tests.Data
 
         private void CreateCustomer()
         {
-            var c = new Customer { Firstname = "John", Lastname = "Doe", Inserted = DateTime.Now };
+            var c = new Customer {Firstname = "John", Lastname = "Doe", Inserted = DateTime.Now};
             customerRepository.Add(c);
 
             customerRepository.UnitOfWork.SaveChanges();
@@ -199,14 +204,14 @@ namespace Infrastructure.Tests.Data
         private void FindOneCustomer()
         {
             var c = repository.FindOne<Customer>(x => x.Firstname == "John" &&
-                                                    x.Lastname == "Doe");
+                                                      x.Lastname == "Doe");
 
             Console.Write("Found Customer: {0} {1}", c.Firstname, c.Lastname);
         }
 
         private void GetProductsWithPaging()
         {
-            var output = repository.Get<Product, string>(x => x.Name, 0, 5).ToList();
+            List<Product> output = repository.Get<Product, string>(x => x.Name, 0, 5).ToList();
             Assert.IsTrue(output[0].Name == "Windows Seven Home");
             Assert.IsTrue(output[1].Name == "Windows Seven Premium");
             Assert.IsTrue(output[2].Name == "Windows Seven Professional");
@@ -216,16 +221,19 @@ namespace Infrastructure.Tests.Data
 
         private void FindCategoryWithInclude()
         {
-            var category = repository.GetQuery<Category>(x => x.Name == "Operating System").Include(c => c.Products).SingleOrDefault();
+            Category category =
+                repository.GetQuery<Category>(x => x.Name == "Operating System")
+                    .Include(c => c.Products)
+                    .SingleOrDefault();
             Assert.IsNotNull(category);
             Assert.IsTrue(category.Products.Count > 0);
         }
 
         private static void DoAction(Expression<Action> action)
         {
-            Console.Write("Executing {0} ... ", action.Body.ToString());
+            Console.Write("Executing {0} ... ", action.Body);
 
-            var act = action.Compile();
+            Action act = action.Compile();
             act.Invoke();
 
             Console.WriteLine();

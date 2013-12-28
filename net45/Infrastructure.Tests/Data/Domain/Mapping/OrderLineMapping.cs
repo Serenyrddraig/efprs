@@ -1,10 +1,9 @@
-﻿
-namespace Infrastructure.Tests.Data.Domain.Mapping
+﻿namespace Infrastructure.Tests.Data.Domain.Mapping
 {
     public class OrderLineMapping : EntityMappingBase<OrderLine>
     {
         public OrderLineMapping()
-        {                        
+        {
             HasKey(x => x.Id);
 
             Property(x => x.Price);

@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Data.Objects;
 using System.Data;
 using System.Data.Common;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 
 namespace Infrastructure.Data
 {
     internal class UnitOfWork : IUnitOfWork
     {
+        private readonly DbContext _dbContext;
         private DbTransaction _transaction;
-        private DbContext _dbContext;
 
         public UnitOfWork(DbContext context)
         {
@@ -31,12 +31,13 @@ namespace Infrastructure.Data
         {
             if (_transaction != null)
             {
-                throw new ApplicationException("Cannot begin a new transaction while an existing transaction is still running. " +
-                                                "Please commit or rollback the existing transaction before starting a new one.");
+                throw new ApplicationException(
+                    "Cannot begin a new transaction while an existing transaction is still running. " +
+                    "Please commit or rollback the existing transaction before starting a new one.");
             }
             OpenConnection();
-            _transaction = ((IObjectContextAdapter)_dbContext).ObjectContext.Connection.BeginTransaction(isolationLevel);
-        }        
+            _transaction = ((IObjectContextAdapter) _dbContext).ObjectContext.Connection.BeginTransaction(isolationLevel);
+        }
 
         public void RollBackTransaction()
         {
@@ -61,7 +62,7 @@ namespace Infrastructure.Data
 
             try
             {
-                ((IObjectContextAdapter)_dbContext).ObjectContext.SaveChanges();
+                ((IObjectContextAdapter) _dbContext).ObjectContext.SaveChanges();
                 _transaction.Commit();
                 ReleaseCurrentTransaction();
             }
@@ -69,7 +70,7 @@ namespace Infrastructure.Data
             {
                 RollBackTransaction();
                 throw;
-            }            
+            }
         }
 
         public void SaveChanges()
@@ -78,7 +79,7 @@ namespace Infrastructure.Data
             {
                 throw new ApplicationException("A transaction is running. Call CommitTransaction instead.");
             }
-            ((IObjectContextAdapter)_dbContext).ObjectContext.SaveChanges();
+            ((IObjectContextAdapter) _dbContext).ObjectContext.SaveChanges();
         }
 
         public void SaveChanges(SaveOptions saveOptions)
@@ -88,13 +89,15 @@ namespace Infrastructure.Data
                 throw new ApplicationException("A transaction is running. Call CommitTransaction instead.");
             }
 
-            ((IObjectContextAdapter)_dbContext).ObjectContext.SaveChanges(saveOptions);
+            ((IObjectContextAdapter) _dbContext).ObjectContext.SaveChanges(saveOptions);
         }
 
         #region Implementation of IDisposable
 
+        private bool _disposed;
+
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
@@ -103,7 +106,7 @@ namespace Infrastructure.Data
         }
 
         /// <summary>
-        /// Disposes off the managed and unmanaged resources used.
+        ///     Disposes off the managed and unmanaged resources used.
         /// </summary>
         /// <param name="disposing"></param>
         private void Dispose(bool disposing)
@@ -117,19 +120,18 @@ namespace Infrastructure.Data
             _disposed = true;
         }
 
-        private bool _disposed;
         #endregion
 
         private void OpenConnection()
         {
-            if (((IObjectContextAdapter)_dbContext).ObjectContext.Connection.State != ConnectionState.Open)
+            if (((IObjectContextAdapter) _dbContext).ObjectContext.Connection.State != ConnectionState.Open)
             {
-                ((IObjectContextAdapter)_dbContext).ObjectContext.Connection.Open();
+                ((IObjectContextAdapter) _dbContext).ObjectContext.Connection.Open();
             }
         }
 
         /// <summary>
-        /// Releases the current transaction
+        ///     Releases the current transaction
         /// </summary>
         private void ReleaseCurrentTransaction()
         {

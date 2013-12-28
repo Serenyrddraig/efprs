@@ -6,12 +6,22 @@ using Infrastructure.Data.Specification;
 
 namespace Infrastructure.Data
 {
-    public enum SortOrder{ Ascending, Descending }
+    public enum SortOrder
+    {
+        Ascending,
+        Descending
+    }
 
     public interface IRepository
     {
         /// <summary>
-        /// Gets entity by key.
+        ///     Gets the unit of work.
+        /// </summary>
+        /// <value>The unit of work.</value>
+        IUnitOfWork UnitOfWork { get; }
+
+        /// <summary>
+        ///     Gets entity by key.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="keyValue">The key value.</param>
@@ -19,14 +29,14 @@ namespace Infrastructure.Data
         TEntity GetByKey<TEntity>(object keyValue) where TEntity : class;
 
         /// <summary>
-        /// Gets the query.
+        ///     Gets the query.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns></returns>
         IQueryable<TEntity> GetQuery<TEntity>() where TEntity : class;
 
         /// <summary>
-        /// Gets the query.
+        ///     Gets the query.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="predicate">The predicate.</param>
@@ -34,7 +44,7 @@ namespace Infrastructure.Data
         IQueryable<TEntity> GetQuery<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class;
 
         /// <summary>
-        /// Gets the query.
+        ///     Gets the query.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -42,7 +52,7 @@ namespace Infrastructure.Data
         IQueryable<TEntity> GetQuery<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Gets one entity based on matching criteria
+        ///     Gets one entity based on matching criteria
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -50,7 +60,7 @@ namespace Infrastructure.Data
         TEntity Single<TEntity>(Expression<Func<TEntity, bool>> criteria) where TEntity : class;
 
         /// <summary>
-        /// Gets single entity using specification
+        ///     Gets single entity using specification
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -58,7 +68,7 @@ namespace Infrastructure.Data
         TEntity Single<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Firsts the specified predicate.
+        ///     Firsts the specified predicate.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="predicate">The predicate.</param>
@@ -66,7 +76,7 @@ namespace Infrastructure.Data
         TEntity First<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class;
 
         /// <summary>
-        /// Gets first entity with specification.
+        ///     Gets first entity with specification.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -74,50 +84,50 @@ namespace Infrastructure.Data
         TEntity First<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Adds the specified entity.
+        ///     Adds the specified entity.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="entity">The entity.</param>
         void Add<TEntity>(TEntity entity) where TEntity : class;
 
         /// <summary>
-        /// Attaches the specified entity.
+        ///     Attaches the specified entity.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="entity">The entity.</param>
         void Attach<TEntity>(TEntity entity) where TEntity : class;
 
         /// <summary>
-        /// Deletes the specified entity.
+        ///     Deletes the specified entity.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="entity">The entity.</param>
         void Delete<TEntity>(TEntity entity) where TEntity : class;
 
         /// <summary>
-        /// Deletes one or many entities matching the specified criteria
+        ///     Deletes one or many entities matching the specified criteria
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
         void Delete<TEntity>(Expression<Func<TEntity, bool>> criteria) where TEntity : class;
 
         /// <summary>
-        /// Deletes entities which satify specificatiion
+        ///     Deletes entities which satify specificatiion
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
         void Delete<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Updates changes of the existing entity. 
-        /// The caller must later call SaveChanges() on the repository explicitly to save the entity to database
+        ///     Updates changes of the existing entity.
+        ///     The caller must later call SaveChanges() on the repository explicitly to save the entity to database
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="entity">The entity.</param>
         void Update<TEntity>(TEntity entity) where TEntity : class;
 
         /// <summary>
-        /// Finds entities based on provided criteria.
+        ///     Finds entities based on provided criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -125,7 +135,7 @@ namespace Infrastructure.Data
         IEnumerable<TEntity> Find<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Finds entities based on provided criteria.
+        ///     Finds entities based on provided criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -133,7 +143,7 @@ namespace Infrastructure.Data
         IEnumerable<TEntity> Find<TEntity>(Expression<Func<TEntity, bool>> criteria) where TEntity : class;
 
         /// <summary>
-        /// Finds one entity based on provided criteria.
+        ///     Finds one entity based on provided criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -141,7 +151,7 @@ namespace Infrastructure.Data
         TEntity FindOne<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
 
         /// <summary>
-        /// Finds one entity based on provided criteria.
+        ///     Finds one entity based on provided criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -149,14 +159,14 @@ namespace Infrastructure.Data
         TEntity FindOne<TEntity>(Expression<Func<TEntity, bool>> criteria) where TEntity : class;
 
         /// <summary>
-        /// Gets all.
+        ///     Gets all.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns></returns>
         IEnumerable<TEntity> GetAll<TEntity>() where TEntity : class;
 
         /// <summary>
-        /// Gets the specified order by.
+        ///     Gets the specified order by.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <typeparam name="TOrderBy">The type of the order by.</typeparam>
@@ -165,10 +175,11 @@ namespace Infrastructure.Data
         /// <param name="pageSize">Size of the page.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns></returns>
-        IEnumerable<TEntity> Get<TEntity, TOrderBy>(Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex, int pageSize, SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
+        IEnumerable<TEntity> Get<TEntity, TOrderBy>(Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex,
+            int pageSize, SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
 
         /// <summary>
-        /// Gets the specified criteria.
+        ///     Gets the specified criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <typeparam name="TOrderBy">The type of the order by.</typeparam>
@@ -178,10 +189,12 @@ namespace Infrastructure.Data
         /// <param name="pageSize">Size of the page.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns></returns>
-        IEnumerable<TEntity> Get<TEntity, TOrderBy>(Expression<Func<TEntity, bool>> criteria, Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex, int pageSize, SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
+        IEnumerable<TEntity> Get<TEntity, TOrderBy>(Expression<Func<TEntity, bool>> criteria,
+            Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex, int pageSize,
+            SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
 
         /// <summary>
-        /// Gets entities which satifies a specification.
+        ///     Gets entities which satifies a specification.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <typeparam name="TOrderBy">The type of the order by.</typeparam>
@@ -191,17 +204,19 @@ namespace Infrastructure.Data
         /// <param name="pageSize">Size of the page.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <returns></returns>
-        IEnumerable<TEntity> Get<TEntity, TOrderBy>(ISpecification<TEntity> specification, Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex, int pageSize, SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
+        IEnumerable<TEntity> Get<TEntity, TOrderBy>(ISpecification<TEntity> specification,
+            Expression<Func<TEntity, TOrderBy>> orderBy, int pageIndex, int pageSize,
+            SortOrder sortOrder = SortOrder.Ascending) where TEntity : class;
 
         /// <summary>
-        /// Counts the specified entities.
+        ///     Counts the specified entities.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns></returns>
         int Count<TEntity>() where TEntity : class;
 
         /// <summary>
-        /// Counts entities with the specified criteria.
+        ///     Counts entities with the specified criteria.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
@@ -209,17 +224,11 @@ namespace Infrastructure.Data
         int Count<TEntity>(Expression<Func<TEntity, bool>> criteria) where TEntity : class;
 
         /// <summary>
-        /// Counts entities satifying specification.
+        ///     Counts entities satifying specification.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="criteria">The criteria.</param>
         /// <returns></returns>
         int Count<TEntity>(ISpecification<TEntity> criteria) where TEntity : class;
-
-        /// <summary>
-        /// Gets the unit of work.
-        /// </summary>
-        /// <value>The unit of work.</value>
-        IUnitOfWork UnitOfWork { get; }
-    }    
+    }
 }

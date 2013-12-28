@@ -11,34 +11,14 @@ namespace Infrastructure.Tests.Data.Domain
             OrderLines = new List<OrderLine>();
         }
 
-        public virtual string Name
-        {
-            get;
-            set;
-        }
+        public virtual string Name { get; set; }
 
-        public virtual double Price
-        {
-            get;
-            set;
-        }
+        public virtual double Price { get; set; }
 
-        public virtual string Description
-        {
-            get;
-            set;
-        }
+        public virtual string Description { get; set; }
 
-        public virtual IList<Category> Categories
-        {
-            get;
-            set;
-        }
+        public virtual IList<Category> Categories { get; set; }
 
-        public virtual IList<OrderLine> OrderLines
-        {
-            get;
-            set;
-        }
+        public virtual IList<OrderLine> OrderLines { get; set; }
     }
 }

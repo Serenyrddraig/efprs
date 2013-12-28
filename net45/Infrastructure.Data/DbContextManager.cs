@@ -7,34 +7,53 @@ namespace Infrastructure.Data
 {
     public class DbContextManager
     {
-        public static void Init(string[] mappingAssemblies, bool recreateDatabaseIfExist = false, bool lazyLoadingEnabled = true)
+        /// <summary>
+        ///     The default connection string name used if only one database is being communicated with.
+        /// </summary>
+        public const string DefaultConnectionStringName = "DefaultDb";
+
+        /// <summary>
+        ///     Maintains a dictionary of db context builders, one per database.  The key is a
+        ///     connection string name used to look up the associated database, and used to decorate respective
+        ///     repositories. If only one database is being used, this dictionary contains a single
+        ///     factory with a key of <see cref="DefaultConnectionStringName" />.
+        /// </summary>
+        private static readonly Dictionary<string, DbContextBuilder<DbContext>> _dbContextBuilders =
+            new Dictionary<string, DbContextBuilder<DbContext>>();
+
+        private static readonly object _syncLock = new object();
+
+        /// <summary>
+        ///     An application-specific implementation of IDbContextStorage must be setup either thru
+        ///     <see cref="InitStorage" /> or one of the <see cref="Init" /> overloads.
+        /// </summary>
+        protected static IDbContextStorage _storage { get; set; }
+
+        public static void Init(string[] mappingAssemblies, bool recreateDatabaseIfExist = false,
+            bool lazyLoadingEnabled = true)
         {
             Init(DefaultConnectionStringName, mappingAssemblies, recreateDatabaseIfExist, lazyLoadingEnabled);
         }
 
-        public static void Init(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExist = false, bool lazyLoadingEnabled = true)
+        public static void Init(string connectionStringName, string[] mappingAssemblies,
+            bool recreateDatabaseIfExist = false, bool lazyLoadingEnabled = true)
         {
             AddConfiguration(connectionStringName, mappingAssemblies, recreateDatabaseIfExist, lazyLoadingEnabled);
-        }       
+        }
 
         public static void InitStorage(IDbContextStorage storage)
         {
-            if (storage == null) 
+            if (storage == null)
             {
                 throw new ArgumentNullException("storage");
             }
             if ((_storage != null) && (_storage != storage))
             {
                 throw new ApplicationException("A storage mechanism has already been configured for this application");
-            }            
+            }
             _storage = storage;
         }
 
-        /// <summary>
-        /// The default connection string name used if only one database is being communicated with.
-        /// </summary>
-        public const string DefaultConnectionStringName = "DefaultDb";  
-      
 
         ///// <summary>
         ///// Used to get the a DbContext associated with a key; i.e., the key 
@@ -67,16 +86,17 @@ namespace Infrastructure.Data
 
                 if (context == null)
                 {
-                    var bldr = _dbContextBuilders[key];
-                    var model = bldr.CompiledModel;  // force model compile                  
-                    _storage.SetDbContextFactoryForKey(key, (IEFContextFactory<DbContext>)bldr);
+                    DbContextBuilder<DbContext> bldr = _dbContextBuilders[key];
+                    DbCompiledModel model = bldr.CompiledModel; // force model compile                  
+                    _storage.SetDbContextFactoryForKey(key, bldr);
                     context = _storage.GetDbContextForKey(key);
                 }
             }
             return context;
         }
 
-        private static void AddConfiguration(string connectionStringName, string[] mappingAssemblies, bool recreateDatabaseIfExists = false, bool lazyLoadingEnabled = true)
+        private static void AddConfiguration(string connectionStringName, string[] mappingAssemblies,
+            bool recreateDatabaseIfExists = false, bool lazyLoadingEnabled = true)
         {
             if (string.IsNullOrEmpty(connectionStringName))
             {
@@ -91,24 +111,9 @@ namespace Infrastructure.Data
             lock (_syncLock)
             {
                 _dbContextBuilders.Add(connectionStringName,
-                    new DbContextBuilder<DbContext>(connectionStringName, mappingAssemblies, recreateDatabaseIfExists, lazyLoadingEnabled));
+                    new DbContextBuilder<DbContext>(connectionStringName, mappingAssemblies, recreateDatabaseIfExists,
+                        lazyLoadingEnabled));
             }
-        }        
-
-        /// <summary>
-        /// An application-specific implementation of IDbContextStorage must be setup either thru
-        /// <see cref="InitStorage" /> or one of the <see cref="Init" /> overloads. 
-        /// </summary>
-        protected static IDbContextStorage _storage { get; set; }
-
-        /// <summary>
-        /// Maintains a dictionary of db context builders, one per database.  The key is a 
-        /// connection string name used to look up the associated database, and used to decorate respective
-        /// repositories. If only one database is being used, this dictionary contains a single
-        /// factory with a key of <see cref="DefaultConnectionStringName" />.
-        /// </summary>
-        private static Dictionary<string, DbContextBuilder<DbContext>> _dbContextBuilders = new Dictionary<string, DbContextBuilder<DbContext>>();
-
-        private static object _syncLock = new object();
+        }
     }
 }

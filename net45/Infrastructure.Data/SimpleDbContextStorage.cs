@@ -5,38 +5,34 @@ namespace Infrastructure.Data
 {
     public class SimpleDbContextStorage : IDbContextStorage
     {
-        private Dictionary<string, IEFContextFactory<DbContext>> _storage = new Dictionary<string, IEFContextFactory<DbContext>>();
+        private readonly Dictionary<string, IEFContextFactory<DbContext>> _storage =
+            new Dictionary<string, IEFContextFactory<DbContext>>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SimpleDbContextStorage"/> class.
-        /// </summary>
-        public SimpleDbContextStorage() { }
-
-        /// <summary>
-        /// Returns the db context associated with the specified key or
-		/// null if the specified key is not found.
+        ///     Returns the db context associated with the specified key or
+        ///     null if the specified key is not found.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public DbContext GetDbContextForKey(string key)
         {
             IEFContextFactory<DbContext> context;
-            if (!this._storage.TryGetValue(key, out context))
+            if (!_storage.TryGetValue(key, out context))
                 return null;
             return context.Create();
         }
 
 
         /// <summary>
-        /// Stores the db context into a dictionary using the specified key.
-        /// If an object context already exists by the specified key, 
-        /// it gets overwritten by the new object context passed in.
+        ///     Stores the db context into a dictionary using the specified key.
+        ///     If an object context already exists by the specified key,
+        ///     it gets overwritten by the new object context passed in.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="objectContext">The object context.</param>
         public void SetDbContextFactoryForKey(string key, IEFContextFactory<DbContext> context)
         {
-            this._storage.Add(key, context);           
+            _storage.Add(key, context);
         }
 
         /// <summary>
